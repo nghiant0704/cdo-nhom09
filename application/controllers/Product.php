@@ -162,4 +162,46 @@ class Product extends MY_Controller
             }
         }
     }
+	
+	/*
+     * Tìm kiếm theo tên sp
+     */
+    function search(){
+        if($this->uri->rsegment('3') == 1)
+        {
+            //lay du lieu tu autocomplete
+            $key =  $this->input->get('term');
+        }else{
+            $key =  $this->input->get('search');
+        }
+
+        $this->data['key'] = trim($key);
+
+        $input = array();
+        $input['like'] = array('LOWER("name")', strtolower($key));
+        $list = $this->product_model->get_list($input);
+
+        $this->data['list'] = $list;
+
+        if($this->uri->rsegment('3') == 1) {
+            //xu ly autocomplete
+            $result = array();
+            foreach ($list as $row) {
+                $item = array();
+                $item['id'] = $row->id;
+                $item['label'] = $row->name;
+                $item['value'] = $row->name;
+                $result[] = $item;
+            }
+            //du lieu tra ve duoi dang json
+            die(json_encode($result));
+        }else{
+
+            //load view
+            $this->data['template'] = 'front/product/search';
+            $this->load->view('front/layout', $this->data);
+        }
+
+
+    }
 }

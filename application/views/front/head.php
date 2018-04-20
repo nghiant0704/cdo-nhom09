@@ -22,3 +22,12 @@
 
 <script type="text/javascript" src="<?php echo public_url()?>/front/javascript/jquery.min.js"></script>
 <script type="text/javascript" src="<?php echo public_url()?>/front/javascript/jquery-ui.js"></script>
+
+<script type="text/javascript">
+    $(function() {
+        $( "#text_search" ).autocomplete({
+            source: "<?php echo site_url('product/search/1')?>",
+			appendTo: "#txtAllowSearch",
+        });
+    });
+</script>
