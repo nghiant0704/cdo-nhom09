@@ -90,4 +90,76 @@ class Product extends MY_Controller
         $this->data['template'] = 'front/product/category';
         $this->load->view('front/layout', $this->data);
     }
+	
+	/*
+     * Chi tiết sản phẩm
+     */
+    function detail(){
+        //lấy id sp từ url
+        $id = $this->uri->rsegment(3);
+        $product = $this->product_model->get_info($id);
+
+        if(!$product)
+            redirect();
+
+        //tăng số lượt view của sp trong database
+        $data = array();
+        $data['view'] = $product->view + 1;
+        $this->product_model->update($product->id,$data);
+
+        //Lấy tất cả comment của sản phẩm
+        $this->load->model('comment_model');
+        $input['where'] = array('product_id' => $product->id);
+        $comments = $this->comment_model->get_list($input);
+
+        $this->data['comments'] = $comments;
+
+        $this->data['product'] = $product;
+        $this->load->model('category_model');
+        $pdcategory = $this->category_model->get_info($product->category_id);
+        $this->data['pdcategory'] =$pdcategory;
+
+        //load view
+        $this->data['template'] = 'front/product/detail';
+        $this->load->view('front/layout', $this->data);
+    }
+	
+	function comment(){
+        $this->load->model('comment_model');
+        $user_id_login = $this->session->userdata('user_id_login');
+        if(!$user_id_login)
+            redirect();
+
+        $this->load->library('form_validation');
+        $this->load->helper('form');
+
+        if($this->input->post()){
+            $this->form_validation->set_rules('name', 'Tên', 'required|min_length[8]');
+            $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
+            $this->form_validation->set_rules('review-text', 'Review', 'required|min_length[6]');
+            $this->form_validation->set_rules('pd_id', '', 'required');
+
+            if($this->form_validation->run()){
+                //mã hoá password
+                $data = array(
+                    'product_id' => $this->input->post('pd_id'),
+                    'parent_id' => 0,
+                    'user_name' => $this->input->post('name') ,
+                    'user_email' => $this->input->post('email') ,
+                    'user_id' => $user_id_login,
+                    'content' => $this->input->post('review-text'),
+                    'created' => date('d-M-Y h:i:s'),
+                    'count_like' => 0,
+                    'status' => 1,
+                );
+                if($this->comment_model->create($data)){
+                    $this->session->set_flashdata('message', 'Thêm Review thành công!');
+                }
+                else{
+                    $this->session->set_flashdata('message', 'Có lỗi!');
+                }
+                redirect(base_url('product/detail/'.$this->input->post('pd_id')));
+            }
+        }
+    }
 }
