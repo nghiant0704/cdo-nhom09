@@ -115,4 +115,81 @@ class User extends MY_Controller
         }
         redirect();
     }
+	
+	function edit(){
+        //kiểm tra user đã đăng nhập chưa, nếu chưa thì chuyển về trang chủ
+        $user_id_login = $this->session->userdata('user_id_login');
+        if(!$user_id_login)
+            redirect();
+
+        //lấy id của user từ session
+        $id = intval($user_id_login);
+
+        $this->load->library('form_validation');
+        $this->load->helper('form');
+
+        $user = $this->user_model->get_info($id);
+        //ko tồn tại user
+        if(!$user){
+            $this->session->set_flashdata('message','Có lỗi');
+            redirect();
+        }
+
+        if($this->input->post()){
+            $this->form_validation->set_rules('name', 'Họ và tên', 'required|min_length[8]');
+            $this->form_validation->set_rules('email', 'Email', 'required|valid_email|callback_check_email');
+            $this->form_validation->set_rules('phone', 'Số điện thoại', 'required|numeric|min_length[10]|max_length[12]');
+            $this->form_validation->set_rules('address', 'Địa chỉ', 'required');
+
+            $password = $this->input->post('password');
+            if($password)
+            {
+                $this->form_validation->set_rules('password', 'Mật khẩu', 'required|min_length[6]');
+                $this->form_validation->set_rules('re_password', 'Nhập lại mật khẩu', 'matches[password]');
+            }
+            if($this->form_validation->run()){
+                $data = array(
+                    'name' => $this->input->post('name') ,
+                    'email' => $this->input->post('email'),
+                    'phone' => $this->input->post('phone'),
+                    'address' => $this->input->post('address')
+                );
+
+                if($password) {
+                    //mã hoá password
+                    $pass_hash = password_hash($this->input->post('password'),PASSWORD_DEFAULT);
+                    $data['password'] = $pass_hash;
+                }
+
+                if($this->user_model->update($id, $data)) {
+                    $this->session->set_flashdata('message', 'Cập nhật thành công');
+                }
+                else{
+                    $this->session->set_flashdata('message', 'Có lỗi');
+                }
+
+                redirect(base_url('user/info'));
+            }
+        }
+
+        $this->data['template'] ='front/user/edit';
+        $this->load->view('front/layout',$this->data);
+    }
+
+    function transaction(){
+        $user_id_login = $this->session->userdata('user_id_login');
+        if(!$user_id_login)
+            redirect();
+
+        $this->load->model('transaction_model');
+
+        $input['where'] = array('user_id' => $user_id_login);
+
+        $list = $this->transaction_model->get_list($input);
+
+        $this->data['list'] = $list;
+
+        $this->data['template'] ='front/user/transaction';
+        $this->load->view('front/layout',$this->data);
+    }
 }
