@@ -322,4 +322,35 @@ class Product extends MY_Controller
             }
         }
     }
+
+    function them10ngsp(){
+        ini_set('max_execution_time', 0);
+        for ($i = 1; $i <= 10000; $i++) {
+            $data = array(
+                'name' => 'Samsung Galaxy Note 8'.$i,
+                'category_id' => 19,
+                'price' => 22490000,
+                'image_link' => '636486694734648848_1.jpg',
+                'image_list' => '["636486694833929297_21.jpg","636486695952803636_32.jpg"]',
+                'discount' => 0,
+                'warranty' => '12 tháng',
+                'gifts' => 'tai nghe Iphone',
+                'content' => 'NTN',
+                'video' => 'https://www.youtube.com/embed/zAEYQ6FDO5U',
+                'created' => date('d-M-Y h:i:s'),
+                "maker_id" => 0,
+                "total" => 0,
+                "buyed" => 0,
+            );
+            //them moi vao csdl
+            if ($this->product_model->create($data)) {
+                //tạo ra nội dung thông báo
+                $this->session->set_flashdata('message', 'Thêm sản phẩm thành công');
+            } else {
+                $this->session->set_flashdata('message', 'Không thêm được');
+            }
+        }
+
+        return 'Đã thêm 10000 sp';
+    }
 }

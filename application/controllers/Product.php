@@ -179,6 +179,7 @@ class Product extends MY_Controller
 
         $input = array();
         $input['like'] = array('LOWER("name")', strtolower($key));
+        $input['limit'] = array('15' ,'0');
         $list = $this->product_model->get_list($input);
 
         $this->data['list'] = $list;
